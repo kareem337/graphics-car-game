@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CAR GAME</title>
+    <script src="lib/three.min.js"></script>
+    <script src="lib/OrbitControls.js"></script>
+    <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="http://mamboleoo.be/learnThree/demos/OBJLoader.js"></script>
+    <style>
+        body {
+            margin: 0; 
+        }
+    </style>
+    <link rel="stylesheet" href="Scene.css">
+</head>
+<body>
+    
+    <label id="score">Score:</label>
+
+    
+    </body>
+
+<script>
+
+    // global variables
+    
+    var level = 0;
+    var renderer;
+    var scene;
+    var camera;
+    var test;
+    scene = new THREE.Scene();
+    var coins_score = document.getElementById("score");
+    var floor;
+    var number_of_coins = 0;
+    var arr =[];
+    var speed = 20;
+    
+
+    function init() {
+
+        addfloor();
+        addcoin();
+        obstacles();
+        addcar();
+        addgrass();
+        // create a scene background
+        const loader = new THREE.TextureLoader();
+        scene.background=loader.load('img/sky.jpg');
+
+        // create a camera, which defines where we're looking at.
+        camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 1, 10000);
+
+
+        // position and point the camera to the center of the scene
+        camera.position.set(0, 100, floor.position.z+floor.geometry.parameters.height/2+200);
+        
+{
+    const loader = new THREE.CubeTextureLoader();
+    const texture = loader.load([
+      'divine_rt.jpg',
+      'divine_lf.jpg',
+      'divine_up.jpg',
+      'divine_dn.jpg',
+      'divine_bk.jpg',
+      'divine_ft.jpg',
+    ]);
+    scene.background = texture;
+  }
+ // Control for the camera
+    // ********** //
+    scene.control = new THREE.OrbitControls( camera );
+    scene.control.enableKeys = false;
+
+        // create a render, sets the background color and the size
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      
+        // add the output of the renderer to the html element
+        document.body.appendChild(renderer.domElement);
+
+     var light = new THREE.AmbientLight( 0xFFD700);
+     scene.add( light );
+
+/*
+        const loader1 = new THREE.GLTFLoader();
+        loader1.load('models/model/CorvetteC7.fbx' , function( gltf ){
+            scene.add(gltf.scene);
+        })
+       
+        // call the render function
+
+
+        var objLoader = new THREE.OBJLoader();
+
+//Launch loading of the obj file, addBananaInScene is the callback when it's ready 
+texture = new THREE.TextureLoader().load( '' );
+objLoader.load( '',
+    function( obj ){
+        obj.traverse( function( child ) {
+            if ( child instanceof THREE.Mesh ) {
+                child.material = material;
+            }
+		} );
+		obj.position.x=-0;
+		obj.position.y=25;
+		obj.position.z=floor.position.z+floor.geometry.parameters.height/2;
+		scene.add( obj );
+}); */
+        render(scene,camera);
+
+    }
+   
+    var coin2 =[];
+    function addcoin() 
+  {
+    
+      const texture = new THREE.ImageUtils.loadTexture( 'img/coin.png' );
+	  const coinGeometry = new THREE.CylinderGeometry( 10, 10, 0, 20);
+      var texturecoin = new THREE.MeshLambertMaterial({map: texture});
+     
+      for(var i=0;i<=100;i++) 
+      {
+      coin2[i] = new THREE.Mesh(coinGeometry, texturecoin);
+      coin2[i].name = "coin2";
+      coin2[i].position.x = (Math.random()-0.5)*floor.geometry.parameters.width;
+      coin2[i].position.y = 25;
+      coin2[i].position.z = (Math.random()-0.5)*floor.geometry.parameters.height;
+      coin2[i].rotateX(30);
+      scene.add(coin2[i]);
+      }
+
+
+    }
+var cube =[];
+    function obstacles(){
+      const texture = new THREE.ImageUtils.loadTexture( 'img/box.png' );
+      var geometryc = new THREE.BoxGeometry(50,50,50);
+      var texturec = new THREE.MeshBasicMaterial({map: texture});
+      
+      for(var i=0;i<=30;i++){
+      cube[i] = new THREE.Mesh(geometryc, texturec);
+      cube[i].name = "cube";
+      cube[i].position.x = ((Math.random()-0.5)*(floor.geometry.parameters.width-(cube[i].geometry.parameters.width)));
+      cube[i].position.y = 20;
+      cube[i].position.z = (Math.random()-0.5)*(floor.geometry.parameters.height-(cube[i].geometry.parameters.width));
+      scene.add(cube[i]);
+    }
+
+    }
+
+    function addfloor() {
+      const loader = new THREE.TextureLoader();
+      const planeTexture = new THREE.ImageUtils.loadTexture( 'img/race.jpg' );
+      var floorGeometry = new THREE.PlaneGeometry(600, 20000);
+      var floorMaterial = new THREE.MeshBasicMaterial( {map: planeTexture});
+      floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.name = "floor";
+      floor.rotateX(-Math.PI/2);
+     // floor.receiveShadow = true;
+      floor.position.set(0,-10,0);
+      scene.add(floor);
+    }
+
+    function addcar() {
+        const loader = new THREE.TextureLoader();
+        //Car box
+    const boxGeometry = new THREE.BoxGeometry(25,25,50);
+    const boxMaterial = new THREE.MeshBasicMaterial( {color:'rgb(65,105,225)'} );
+    const box = new THREE.Mesh( boxGeometry, boxMaterial );
+    box.name = "box";
+    box.position.set(0,25,floor.position.z+floor.geometry.parameters.height/2);
+    scene.add(box);
+
+
+
+    // ********** //
+    // Create cylinder
+    // ********** //
+    
+    const wheelTexture = new THREE.ImageUtils.loadTexture( 'img/wheel.png' );
+    const cylinderGeometry = new THREE.CylinderGeometry(10, 10, 10, 50);
+    const cylinderMaterial = new THREE.MeshBasicMaterial( {map: wheelTexture} );
+    const cylinder = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
+    cylinder.name = "cylinder";
+    scene.add(cylinder);
+
+    // Set position of the cylinder
+    cylinder.position.set(-10,10,(floor.position.z+floor.geometry.parameters.height/2)-20);
+    cylinder.rotateZ(Math.PI/2);
+
+
+// ********** //
+    // Create cylinder2
+    // ********** //
+    const cylinder2Geometry = new THREE.CylinderGeometry(10, 10, 10, 50);
+    const cylinder2Material = new THREE.MeshBasicMaterial( {map: wheelTexture} );
+    const cylinder2 = new THREE.Mesh( cylinder2Geometry, cylinder2Material );
+    cylinder2.name = "cylinder2";
+    scene.add(cylinder2);
+
+    // Set position of the cylinder
+    cylinder2.position.set(10,10,(floor.position.z+floor.geometry.parameters.height/2)-20);
+    cylinder2.rotateZ(Math.PI/2);
+
+
+
+
+    // ********** //
+    // Create cylinder3
+    // ********** //
+    const cylinder3Geometry = new THREE.CylinderGeometry(10, 10, 10, 50);
+    const cylinder3Material = new THREE.MeshBasicMaterial( {map: wheelTexture} );
+    const cylinder3 = new THREE.Mesh( cylinder3Geometry, cylinder3Material );
+    cylinder3.name = "cylinder3";
+    scene.add(cylinder3);
+
+     // Set position of the cylinder
+    cylinder3.position.set(10,10,(floor.position.z+floor.geometry.parameters.height/2)+20);
+    cylinder3.rotateZ(Math.PI/2);
+
+     // ********** //
+    // Create cylinder4
+    // ********** //
+    const cylinder4Geometry = new THREE.CylinderGeometry(10, 10, 10, 50);
+    const cylinder4Material = new THREE.MeshBasicMaterial( {map: wheelTexture} );
+    const cylinder4 = new THREE.Mesh( cylinder4Geometry, cylinder4Material );
+    cylinder4.name = "cylinder4";
+    scene.add(cylinder4);
+
+    // Set position of the cylinder
+    cylinder4.position.set(-10,10,(floor.position.z+floor.geometry.parameters.height/2)+20);
+    cylinder4.rotateZ(Math.PI/2);
+    }
+
+
+     function addgrass()
+     {
+        const loader = new THREE.TextureLoader();
+	         //GRASS
+        	let grassGeometry = new THREE.PlaneGeometry(6000, 20000);
+        	const grassTexture = new THREE.ImageUtils.loadTexture( 'img/grass.jfif' );
+        	let grassMaterial = new THREE.MeshBasicMaterial( {map: grassTexture} );
+        	let grass = new THREE.Mesh(grassGeometry, grassMaterial);
+        	grass.name = "grass";
+        	grass.rotateX(-Math.PI/2); // This is 90 degrees by the way
+        	grass.position.set(0,-20,0);
+        	scene.add(grass);
+     }
+
+
+
+
+var keyMap = [];
+document.addEventListener("keydown", onDocumentKeyDown); 
+document.addEventListener("keyup", onDocumentKeyUp);
+function onDocumentKeyDown(event){ 
+    var keyCode = event.keyCode;
+    keyMap[keyCode] = true;
+}
+function onDocumentKeyUp(event){
+    var keyCode = event.keyCode;
+    keyMap[keyCode] = false;
+}
+
+function executeMovement(){
+    const box = scene.getObjectByName("box");
+    const cylinder = scene.getObjectByName("cylinder");
+    const cylinder2 = scene.getObjectByName("cylinder2");
+    const cylinder3 = scene.getObjectByName("cylinder3");
+    const cylinder4 = scene.getObjectByName("cylinder4");
+    const floor = scene.getObjectByName("floor");
+    const grass = scene.getObjectByName("grass");
+
+    if(keyMap[37] == true && box.position.x>=-260){
+        //rotate left
+        cylinder.position.x -= speed;
+       cylinder2.position.x -= speed;
+       cylinder3.position.x -= speed;
+       cylinder4.position.x -= speed;
+        box.position.x -= speed;
+        camera.position.x-=speed;
+
+        for(i=0; i<=100; i++)
+         {
+
+   
+            if(Math.abs(box.position.z-coin2[i].position.z)< box.geometry.parameters.width+10 && Math.abs(box.position.x-coin2[i].position.x)< box.geometry.parameters.width+10)
+            {
+     
+                scene.remove(coin2[i]);
+                console.log(arr.length);
+                flag = false;
+                for(j=0; j<=arr.length;j++)
+                {
+
+                if(arr[j]==i) {
+                    flag = true;
+
+                }
+            }
+            if(flag==false)
+            {
+                arr.push(i);
+                number_of_coins++;
+            }
+                console.log("SCORE: ");
+                console.log(number_of_coins);
+                coins_score.innerText = "Score:" + number_of_coins;             
+
+            }
+
+
+        }
+
+ 
+
+        for(i=0; i<=30; i++)
+         {
+            if(Math.abs(box.position.z-cube[i].position.z)< box.geometry.parameters.width+15 && Math.abs(box.position.x-cube[i].position.x)< box.geometry.parameters.width+15)
+            {  
+                console.log("KAREEM");
+                alert ("GAME OVER \n Your score:" + number_of_coins);
+                location.reload();
+            }  
+        }
+
+    }
+    if(keyMap[39] == true && box.position.x<=260){
+        //rotate right
+        cylinder.position.x += speed;
+        cylinder2.position.x += speed;
+        cylinder3.position.x += speed;
+        cylinder4.position.x += speed;
+        box.position.x += speed;
+        camera.position.x+=speed;
+
+        for(i=0; i<=100; i++)
+         {
+
+   
+            if(Math.abs(box.position.z-coin2[i].position.z)< box.geometry.parameters.width+10 && Math.abs(box.position.x-coin2[i].position.x)< box.geometry.parameters.width+10)
+            {
+     
+                scene.remove(coin2[i]);
+                console.log(arr.length);
+                flag = false;
+                for(j=0; j<=arr.length;j++)
+                {
+
+                if(arr[j]==i) {
+                    flag = true;
+
+                }
+            }
+            if(flag==false)
+            {
+                arr.push(i);
+                number_of_coins++;
+            }
+                console.log("SCORE: ");
+                console.log(number_of_coins);
+                coins_score.innerText = "Score:" + number_of_coins;             
+
+            }
+
+
+        }
+
+ 
+
+        for(i=0; i<=30; i++)
+         {
+            if(Math.abs(box.position.z-cube[i].position.z)< box.geometry.parameters.width+15 && Math.abs(box.position.x-cube[i].position.x)< box.geometry.parameters.width+15)
+            {  
+                console.log("KAREEM");
+                alert ("GAME OVER \n Your score:" + number_of_coins);
+                location.reload();
+            }  
+        }
+
+
+    }
+    if(keyMap[38] == true && box.position.z>=-9850){
+        //move front
+        cylinder.rotateY(speed);
+        cylinder2.rotateY(speed);
+        cylinder3.rotateY(speed);
+        cylinder4.rotateY(speed);
+        cylinder.position.z -= speed;
+        cylinder2.position.z -= speed;
+        cylinder3.position.z -= speed;
+        cylinder4.position.z -= speed;
+        box.position.z -= speed;
+        camera.position.z-=speed;
+    
+        
+
+        for(i=0; i<=100; i++)
+         {
+
+   
+            if(Math.abs(box.position.z-coin2[i].position.z)< box.geometry.parameters.width+10 && Math.abs(box.position.x-coin2[i].position.x)< box.geometry.parameters.width+10)
+            {
+     
+                scene.remove(coin2[i]);
+                console.log(arr.length);
+                flag = false;
+                for(j=0; j<=arr.length;j++)
+                {
+
+                if(arr[j]==i) {
+                    flag = true;
+
+                }
+            }
+            if(flag==false)
+            {
+                arr.push(i);
+                number_of_coins++;
+            }
+                console.log("SCORE: ");
+                console.log(number_of_coins);
+                coins_score.innerText = "Score:" + number_of_coins;             
+
+            }
+
+
+        }
+
+ 
+
+        for(i=0; i<=30; i++)
+         {
+            if(Math.abs(box.position.z-cube[i].position.z)< box.geometry.parameters.width+15 && Math.abs(box.position.x-cube[i].position.x)< box.geometry.parameters.width+15)
+            {  
+                console.log("KAREEM");
+                alert ("GAME OVER \n Your score:" + number_of_coins);
+                location.reload();
+            }  
+        }
+        
+        if(box.position.z==-9800)
+    {
+
+        alert("GOOD JOB \n YOUR SCORE: "+ number_of_coins );
+        location.reload();
+
+    }
+
+    }
+              
+
+
+   
+}
+
+ 
+    function render() {
+        for(i=0; i<=100; i++)
+         {
+            coin2[i].rotateZ(Math.PI/24);
+         }
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+        executeMovement();
+    }
+
+    // calls the init function when the window is done loading.
+    window.onload = init();
+    console.log("KAREEM");
+
+
+</script>
+<body>
+</body>
+</html>
